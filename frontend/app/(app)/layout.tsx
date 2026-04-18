@@ -12,40 +12,45 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="min-h-screen flex bg-gray-50">
+    <div className="min-h-screen flex bg-background font-sans">
       {/* Sidebar */}
-      <aside className="w-60 bg-white border-r border-gray-200 flex flex-col">
-        <div className="px-6 py-5 border-b border-gray-100">
-          <span className="text-lg font-bold text-emerald-700">PotLaunch</span>
+      <aside className="w-64 bg-white border-r border-brand/10 flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-10">
+        <div className="px-6 py-6 border-b border-brand/5">
+          <Link href="/" className="text-2xl font-serif font-semibold text-brand tracking-tight hover:text-accent transition-colors">
+            PotLaunch.
+          </Link>
         </div>
 
-        <nav className="flex-1 px-3 py-4 space-y-1">
+        <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
           <NavLink href="/dashboard" label="Dashboard" />
           <NavLink href="/wallet" label="Wallet" />
 
-          <div className="pt-3 pb-1 px-3">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Campaigns</p>
+          <div className="pt-6 pb-2 px-3">
+            <p className="text-xs font-semibold text-brand/50 uppercase tracking-widest">Campaigns</p>
           </div>
           <NavLink href="/campaigns" label="Browse Campaigns" />
           <NavLink href="/campaigns/new" label="Launch a Campaign" />
 
-          <div className="pt-3 pb-1 px-3">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">My Activity</p>
+          <div className="pt-6 pb-2 px-3">
+            <p className="text-xs font-semibold text-brand/50 uppercase tracking-widest">My Activity</p>
           </div>
           <NavLink href="/investor/pitches" label="My Pitches" />
           <NavLink href="/investor/contracts" label="My Contracts" />
           <NavLink href="/founder/revenue" label="Revenue Oracle" />
         </nav>
 
-        <div className="px-3 py-4 border-t border-gray-100 space-y-1">
+        <div className="p-4 border-t border-brand/5 space-y-1 bg-emerald-50/20">
           <NavLink href="/kyc" label="Identity (KYC)" />
           <LogoutButton />
         </div>
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 overflow-auto">
-        {children}
+      <main className="flex-1 overflow-hidden flex flex-col relative">
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-50 rounded-full blur-[100px] -z-10 pointer-events-none"></div>
+        <div className="flex-1 overflow-y-auto">
+          {children}
+        </div>
       </main>
     </div>
   )
@@ -55,9 +60,9 @@ function NavLink({ href, label }: { href: string; label: string }) {
   return (
     <Link
       href={href}
-      className="flex items-center px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+      className="flex items-center px-4 py-2.5 rounded-lg text-sm font-medium text-brand/80 hover:bg-emerald-50 hover:text-brand transition-all group"
     >
-      {label}
+      <span className="group-hover:translate-x-1 transition-transform">{label}</span>
     </Link>
   )
 }

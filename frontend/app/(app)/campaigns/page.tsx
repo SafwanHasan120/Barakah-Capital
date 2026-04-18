@@ -118,6 +118,84 @@ function CampaignCard({ campaign }: { campaign: Campaign }) {
   )
 }
 
+const MOCK_CAMPAIGNS: Campaign[] = [
+  {
+    id: 'saba-roasters-1',
+    title: 'Saba Roasters',
+    slug: 'saba-roasters',
+    description: 'A premium authentic Yemeni coffee house expanding to a second flagship location.',
+    sector: 'Food & Beverage',
+    business_type: 'local',
+    target_amount_cents: 20000000, // $200k
+    raised_amount_cents: 14500000, // $145k
+    min_investment_cents: 50000,     // $500
+    profit_share_pct: 25,
+    duration_months: 36,
+    status: 'live',
+    users: { full_name: 'Ahmed Y.', barakah_score: 4.8 }
+  },
+  {
+    id: 'nexus-analytics-2',
+    title: 'Nexus Analytics',
+    slug: 'nexus-analytics',
+    description: 'An enterprise B2B data visualization platform for small e-commerce retailers.',
+    sector: 'Technology',
+    business_type: 'startup',
+    target_amount_cents: 100000000,  // $1M
+    raised_amount_cents: 85000000,   // $850k
+    min_investment_cents: 100000,      // $1000
+    profit_share_pct: 15,
+    duration_months: 48,
+    status: 'live',
+    users: { full_name: 'Sarah M.', barakah_score: 4.9 }
+  },
+  {
+    id: 'apex-fitness-3',
+    title: 'Apex Fitness Hub',
+    slug: 'apex-fitness',
+    description: 'A local neighborhood wellness center and gym expanding its functional training area.',
+    sector: 'Health & Wellness',
+    business_type: 'local',
+    target_amount_cents: 5000000,   // $50k
+    raised_amount_cents: 3000000,   // $30k
+    min_investment_cents: 10000,      // $100
+    profit_share_pct: 35,
+    duration_months: 24,
+    status: 'live',
+    users: { full_name: 'David L.', barakah_score: 4.5 }
+  },
+  {
+    id: 'mochas-dates-4',
+    title: 'Mochas & Dates',
+    slug: 'mochas-dates',
+    description: 'Scaling a regional distribution network for organic Medjool dates and authentic treats.',
+    sector: 'Retail',
+    business_type: 'local',
+    target_amount_cents: 15000000,  // $150k
+    raised_amount_cents: 2500000,   // $25k
+    min_investment_cents: 100000,     // $1000
+    profit_share_pct: 20,
+    duration_months: 60,
+    status: 'live',
+    users: { full_name: 'Omar Z.', barakah_score: 4.6 }
+  },
+  {
+    id: 'urban-bolt-5',
+    title: 'Urban Bolt Logistics',
+    slug: 'urban-bolt',
+    description: 'Zero-emission last-mile delivery fleet catering to local downtown retailers.',
+    sector: 'Services',
+    business_type: 'startup',
+    target_amount_cents: 50000000,  // $500k
+    raised_amount_cents: 48000000,  // $480k
+    min_investment_cents: 500000,     // $5000
+    profit_share_pct: 18,
+    duration_months: 36,
+    status: 'live',
+    users: { full_name: 'Marcus T.', barakah_score: 4.7 }
+  }
+];
+
 export default function CampaignsPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([])
   const [total, setTotal] = useState(0)
@@ -130,13 +208,22 @@ export default function CampaignsPage() {
   const fetchCampaigns = useCallback(async (p: number, s: string, sec: string, bt: string) => {
     setLoading(true)
     try {
-      const params = new URLSearchParams({ status: s, page: String(p) })
-      if (sec) params.set('sector', sec)
-      if (bt)  params.set('business_type', bt)
-      const res = await fetch(`/api/campaigns?${params}`)
-      const data = await res.json()
-      setCampaigns(data.campaigns ?? [])
-      setTotal(data.total ?? 0)
+      // Simulate network request for the demo
+      await new Promise(resolve => setTimeout(resolve, 600))
+      let filtered = [...MOCK_CAMPAIGNS]
+      
+      if (s !== 'all' && s !== '') {
+         filtered = filtered.filter(c => c.status === s);
+      }
+      if (sec) {
+         filtered = filtered.filter(c => c.sector === sec);
+      }
+      if (bt) {
+         filtered = filtered.filter(c => c.business_type === bt);
+      }
+      
+      setCampaigns(filtered)
+      setTotal(filtered.length)
     } finally {
       setLoading(false)
     }
