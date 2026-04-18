@@ -44,7 +44,7 @@ export default function RegisterPage() {
       <div className="w-full max-w-md bg-white rounded-2xl shadow p-8 space-y-6">
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold text-gray-900">Create your account</h1>
-          <p className="text-sm text-gray-500">Join the AmanahOS community.</p>
+          <p className="text-sm text-gray-500">Join PotLaunch — ethical profit-sharing for founders and investors.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">

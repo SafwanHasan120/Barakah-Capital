@@ -60,7 +60,7 @@ export default function DepositPage() {
       <div>
         <h1 className="text-2xl font-semibold text-gray-900">Deposit funds</h1>
         <p className="text-sm text-gray-500 mt-1">
-          Funds are held securely in your AmanahOS wallet.
+          Funds are held securely in your PotLaunch wallet.
         </p>
       </div>
 

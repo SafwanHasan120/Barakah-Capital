@@ -136,6 +136,29 @@ export async function getWalletBalance(walletId: string): Promise<number> {
   return data?.balance_cents ?? 0
 }
 
+// ─── Contract distribute (oracle-triggered) ──────────────────────────────────
+
+export async function ledgerContractDistribute(
+  contractId: string,
+  escrowWalletId: string,
+  investorWalletId: string,
+  grossCents: number,
+  wakalahCents: number,
+  snapshotId: string,
+  actorId: string
+) {
+  const { error } = await admin().rpc('ledger_contract_distribute', {
+    p_contract_id:        contractId,
+    p_escrow_wallet_id:   escrowWalletId,
+    p_investor_wallet_id: investorWalletId,
+    p_gross_cents:        grossCents,
+    p_wakalah_cents:      wakalahCents,
+    p_snapshot_id:        snapshotId,
+    p_actor_id:           actorId,
+  })
+  if (error) throw new Error(`ledger_contract_distribute failed: ${error.message}`)
+}
+
 // ─── Webhook dedup ────────────────────────────────────────────────────────────
 
 export async function isEventProcessed(stripeEventId: string): Promise<boolean> {

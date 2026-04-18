@@ -35,8 +35,8 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="w-full max-w-md bg-white rounded-2xl shadow p-8 space-y-6">
         <div className="space-y-1">
-          <h1 className="text-2xl font-semibold text-gray-900">Sign in to Amanah</h1>
-          <p className="text-sm text-gray-500">Ethical finance, powered by community.</p>
+          <h1 className="text-2xl font-semibold text-gray-900">Sign in to PotLaunch</h1>
+          <p className="text-sm text-gray-500">Mudarabah-native investing, powered by community.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">

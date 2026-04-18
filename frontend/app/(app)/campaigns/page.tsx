@@ -10,6 +10,11 @@ const STATUSES = [
   { value: 'in_progress', label: 'In Progress' },
   { value: 'completed', label: 'Completed' },
 ]
+const BUSINESS_TYPES = [
+  { value: '', label: 'All types' },
+  { value: 'startup', label: 'Startup' },
+  { value: 'local', label: 'Local Business' },
+]
 
 type Campaign = {
   id: string
@@ -17,13 +22,14 @@ type Campaign = {
   slug: string
   description: string
   sector: string
+  business_type: string
   target_amount_cents: number
   raised_amount_cents: number
   min_investment_cents: number
   profit_share_pct: number
   duration_months: number
   status: string
-  users: { full_name: string } | null
+  users: { full_name: string; barakah_score?: number | null } | null
 }
 
 function formatUSD(cents: number) {
@@ -71,11 +77,22 @@ function CampaignCard({ campaign }: { campaign: Campaign }) {
     >
       <div className="flex items-start justify-between gap-2 mb-3">
         <div className="flex-1 min-w-0">
-          <span className={`inline-block text-xs font-medium px-2 py-0.5 rounded-full mb-2 ${STATUS_BADGE[campaign.status] ?? 'bg-gray-100 text-gray-600'}`}>
-            {STATUS_LABEL[campaign.status] ?? campaign.status}
-          </span>
+          <div className="flex items-center gap-1.5 mb-2 flex-wrap">
+            <span className={`inline-block text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_BADGE[campaign.status] ?? 'bg-gray-100 text-gray-600'}`}>
+              {STATUS_LABEL[campaign.status] ?? campaign.status}
+            </span>
+            <span className={`inline-block text-xs font-medium px-2 py-0.5 rounded-full ${campaign.business_type === 'local' ? 'bg-amber-50 text-amber-700' : 'bg-violet-50 text-violet-700'}`}>
+              {campaign.business_type === 'local' ? 'Local' : 'Startup'}
+            </span>
+          </div>
           <h3 className="font-semibold text-gray-900 text-sm leading-snug truncate">{campaign.title}</h3>
-          <p className="text-xs text-gray-500 mt-0.5">{campaign.users?.full_name ?? 'Unknown founder'} · {campaign.sector}</p>
+          <p className="text-xs text-gray-500 mt-0.5">
+            {campaign.users?.full_name ?? 'Unknown founder'}
+            {campaign.users?.barakah_score != null && (
+              <span className="ml-1.5 text-amber-600 font-medium">★ {(campaign.users.barakah_score as number).toFixed(1)}</span>
+            )}
+            {' '}· {campaign.sector}
+          </p>
         </div>
       </div>
 
@@ -107,13 +124,15 @@ export default function CampaignsPage() {
   const [page, setPage] = useState(1)
   const [status, setStatus] = useState('live')
   const [sector, setSector] = useState('')
+  const [businessType, setBusinessType] = useState('')
   const [loading, setLoading] = useState(true)
 
-  const fetchCampaigns = useCallback(async (p: number, s: string, sec: string) => {
+  const fetchCampaigns = useCallback(async (p: number, s: string, sec: string, bt: string) => {
     setLoading(true)
     try {
       const params = new URLSearchParams({ status: s, page: String(p) })
       if (sec) params.set('sector', sec)
+      if (bt)  params.set('business_type', bt)
       const res = await fetch(`/api/campaigns?${params}`)
       const data = await res.json()
       setCampaigns(data.campaigns ?? [])
@@ -124,8 +143,8 @@ export default function CampaignsPage() {
   }, [])
 
   useEffect(() => {
-    fetchCampaigns(page, status, sector)
-  }, [page, status, sector, fetchCampaigns])
+    fetchCampaigns(page, status, sector, businessType)
+  }, [page, status, sector, businessType, fetchCampaigns])
 
   function handleStatusChange(s: string) {
     setStatus(s)
@@ -134,6 +153,11 @@ export default function CampaignsPage() {
 
   function handleSectorChange(sec: string) {
     setSector(sec)
+    setPage(1)
+  }
+
+  function handleBusinessTypeChange(bt: string) {
+    setBusinessType(bt)
     setPage(1)
   }
 
@@ -178,6 +202,16 @@ export default function CampaignsPage() {
           <option value="">All sectors</option>
           {SECTORS.map((s) => (
             <option key={s} value={s}>{s}</option>
+          ))}
+        </select>
+
+        <select
+          value={businessType}
+          onChange={(e) => handleBusinessTypeChange(e.target.value)}
+          className="text-xs border border-gray-300 rounded-lg px-3 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+        >
+          {BUSINESS_TYPES.map((bt) => (
+            <option key={bt.value} value={bt.value}>{bt.label}</option>
           ))}
         </select>
       </div>

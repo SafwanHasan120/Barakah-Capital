@@ -1,6 +1,6 @@
 -- ============================================================
--- AmanahOS Initial Schema — Growth Track (Mudaraba)
--- Islamic Kickstarter: profit-sharing campaigns
+-- PotLaunch Initial Schema — Growth Track (Mudaraba)
+-- Mudarabah-native investment platform: profit-sharing campaigns
 -- Run in Supabase SQL editor or via: supabase db push
 -- ============================================================
 
@@ -249,10 +249,10 @@ CREATE TABLE public.campaigns (
   sector                TEXT,
   target_amount_cents   BIGINT NOT NULL CHECK (target_amount_cents >= 1000000),   -- min $10k
   raised_amount_cents   BIGINT NOT NULL DEFAULT 0,
-  min_investment_cents  BIGINT NOT NULL DEFAULT 10000,                            -- min $100
+  min_investment_cents  BIGINT NOT NULL DEFAULT 1,                                -- min $0.01
   profit_share_pct      NUMERIC(5,2) NOT NULL CHECK (profit_share_pct BETWEEN 1 AND 99),
   profit_interval       TEXT NOT NULL DEFAULT 'milestone'
-                        CHECK (profit_interval IN ('monthly','quarterly','milestone')),
+                        CHECK (profit_interval IN ('monthly','quarterly','yearly','milestone')),
   duration_months       SMALLINT NOT NULL CHECK (duration_months BETWEEN 1 AND 60),
   status                public.campaign_status NOT NULL DEFAULT 'draft',
   stripe_product_id     TEXT,
@@ -425,7 +425,7 @@ INSERT INTO public.platform_config (key, value, description) VALUES
   ('kyc_required_for_investment', 'true', 'KYC must be approved before investing'),
   ('stripe_application_fee_pct',  '1.5',  'Percentage charged as Stripe application fee on investment captures'),
   ('min_campaign_target_cents',   '1000000', 'Minimum campaign target ($10,000)'),
-  ('min_investment_cents',        '10000',   'Minimum investment amount ($100)');
+  ('min_investment_cents',        '1',       'Minimum investment amount ($0.01)');
 
 -- ────────────────────────────────────────────────────────────
 -- STRIPE EVENTS (webhook dedup)

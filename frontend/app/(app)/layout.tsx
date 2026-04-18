@@ -16,7 +16,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       {/* Sidebar */}
       <aside className="w-60 bg-white border-r border-gray-200 flex flex-col">
         <div className="px-6 py-5 border-b border-gray-100">
-          <span className="text-lg font-bold text-emerald-700">Amanah</span>
+          <span className="text-lg font-bold text-emerald-700">PotLaunch</span>
         </div>
 
         <nav className="flex-1 px-3 py-4 space-y-1">
@@ -28,6 +28,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           </div>
           <NavLink href="/campaigns" label="Browse Campaigns" />
           <NavLink href="/campaigns/new" label="Launch a Campaign" />
+
+          <div className="pt-3 pb-1 px-3">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">My Activity</p>
+          </div>
+          <NavLink href="/investor/pitches" label="My Pitches" />
+          <NavLink href="/investor/contracts" label="My Contracts" />
+          <NavLink href="/founder/revenue" label="Revenue Oracle" />
         </nav>
 
         <div className="px-3 py-4 border-t border-gray-100 space-y-1">

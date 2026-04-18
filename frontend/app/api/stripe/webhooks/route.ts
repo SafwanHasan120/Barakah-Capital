@@ -9,6 +9,8 @@ import {
   getWalletId,
   getSystemWalletId,
 } from '@/lib/services/ledger.service'
+import { processRevenueEvent } from '@/lib/services/revenue-oracle.service'
+import * as contractService from '@/lib/services/contract.service'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import type Stripe from 'stripe'
@@ -35,6 +37,18 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ received: true, skipped: 'duplicate' })
   }
 
+  // If event.account is set, it's from a connected founder's revenue account — route to oracle
+  if (event.account) {
+    try {
+      await handleConnectedAccountEvent(event)
+      await markEventProcessed(event.id, event.type)
+    } catch (err) {
+      console.error(`Connected account webhook failed for ${event.id}:`, err)
+      return NextResponse.json({ error: 'Handler failed' }, { status: 500 })
+    }
+    return NextResponse.json({ received: true })
+  }
+
   try {
     await handleEvent(event)
     await markEventProcessed(event.id, event.type)
@@ -45,6 +59,31 @@ export async function POST(request: NextRequest) {
   }
 
   return NextResponse.json({ received: true })
+}
+
+async function handleConnectedAccountEvent(event: Stripe.Event) {
+  if (!['charge.succeeded', 'payment_intent.succeeded'].includes(event.type)) return
+
+  const db = createAdminClient()
+  // Look up which campaign belongs to this connected revenue account
+  const { data: user } = await db
+    .from('users')
+    .select('id')
+    .eq('revenue_stripe_account_id', event.account!)
+    .maybeSingle()
+
+  if (!user) return
+
+  const { data: campaign } = await db
+    .from('campaigns')
+    .select('id')
+    .eq('founder_id', user.id)
+    .eq('status', 'in_progress')
+    .maybeSingle()
+
+  if (!campaign) return
+
+  await processRevenueEvent(event, campaign.id)
 }
 
 async function handleEvent(event: Stripe.Event) {
@@ -113,6 +152,18 @@ async function handlePaymentIntentSucceeded(pi: Stripe.PaymentIntent) {
 
   // Write ledger entries
   await ledgerInvest(investorWalletId, escrowWalletId, pi.amount, campaign_id, investment_id, pi.id, investor_id)
+
+  // If this investment came from a pitch, mark the pitch accepted
+  const pitchId = pi.metadata?.pitch_id
+  if (pitchId) {
+    await db.from('pitches').update({ status: 'accepted', responded_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq('id', pitchId)
+  }
+
+  // Lock capital in the smart contract simulation
+  const contractId = await contractService.getContractByInvestment(investment_id)
+  if (contractId) {
+    await contractService.lockCapital(contractId)
+  }
 
   // Update investment status to 'captured'
   await db

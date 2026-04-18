@@ -8,6 +8,7 @@ type Campaign = {
   title: string
   description: string
   sector: string
+  business_type: string
   target_amount_cents: number
   raised_amount_cents: number
   min_investment_cents: number
@@ -21,7 +22,7 @@ type Campaign = {
   founder_id: string
   progress_pct: number
   investor_count: number
-  users: { full_name: string } | null
+  users: { full_name: string; barakah_score?: number | null } | null
 }
 
 function formatUSD(cents: number) {
@@ -49,6 +50,7 @@ const STATUS_LABEL: Record<string, string> = {
 const INTERVAL_LABEL: Record<string, string> = {
   monthly: 'Monthly',
   quarterly: 'Quarterly',
+  yearly: 'Yearly',
   milestone: 'Per Milestone',
 }
 
@@ -114,12 +116,21 @@ export default function CampaignDetailPage({ params }: { params: Promise<{ id: s
         <Link href="/campaigns" className="text-sm text-gray-500 hover:text-gray-700">← Back to campaigns</Link>
         <div className="flex items-start justify-between gap-4 mt-3">
           <div>
-            <span className={`inline-block text-xs font-medium px-2 py-0.5 rounded-full mb-2 ${STATUS_BADGE[campaign.status] ?? 'bg-gray-100 text-gray-600'}`}>
-              {STATUS_LABEL[campaign.status] ?? campaign.status}
-            </span>
+            <div className="flex items-center gap-1.5 mb-2 flex-wrap">
+              <span className={`inline-block text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_BADGE[campaign.status] ?? 'bg-gray-100 text-gray-600'}`}>
+                {STATUS_LABEL[campaign.status] ?? campaign.status}
+              </span>
+              <span className={`inline-block text-xs font-medium px-2 py-0.5 rounded-full ${campaign.business_type === 'local' ? 'bg-amber-50 text-amber-700' : 'bg-violet-50 text-violet-700'}`}>
+                {campaign.business_type === 'local' ? 'Local Business' : 'Startup / Corporate'}
+              </span>
+            </div>
             <h1 className="text-2xl font-semibold text-gray-900">{campaign.title}</h1>
             <p className="text-sm text-gray-500 mt-1">
-              {campaign.users?.full_name ?? 'Unknown founder'} · {campaign.sector}
+              {campaign.users?.full_name ?? 'Unknown founder'}
+              {campaign.users?.barakah_score != null && (
+                <span className="ml-2 text-amber-600 font-medium text-xs">★ {(campaign.users.barakah_score as number).toFixed(1)} Barakah</span>
+              )}
+              {' '}· {campaign.sector}
             </p>
           </div>
         </div>
@@ -180,20 +191,29 @@ export default function CampaignDetailPage({ params }: { params: Promise<{ id: s
       {/* Invest CTA */}
       {campaign.status === 'live' && (
         <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-6 space-y-3">
-          <h2 className="text-base font-semibold text-gray-900">Invest in this campaign</h2>
+          <h2 className="text-base font-semibold text-gray-900">Participate in this campaign</h2>
           <p className="text-sm text-gray-600">
             Minimum investment is <strong>{formatUSD(campaign.min_investment_cents)}</strong>.
-            You will receive <strong>{campaign.profit_share_pct}%</strong> of reported gross profits proportional to your share.
+            Investors receive <strong>{campaign.profit_share_pct}%</strong> of gross profits, shared proportionally.
+            A Wakalah service fee applies on profit distributions.
           </p>
           <p className="text-xs text-gray-500">
-            Under Mudaraba principles you bear the risk of business loss. Returns are not guaranteed.
+            Under Mudarabah principles you bear the risk of business loss. Returns are not guaranteed.
           </p>
-          <Link
-            href={`/campaigns/${campaign.id}/invest`}
-            className="inline-block bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-sm px-5 py-2.5 rounded-lg transition-colors"
-          >
-            Invest now
-          </Link>
+          <div className="flex gap-3 flex-wrap">
+            <Link
+              href={`/campaigns/${campaign.id}/pitch`}
+              className="inline-block bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-sm px-5 py-2.5 rounded-lg transition-colors"
+            >
+              Submit a pitch
+            </Link>
+            <Link
+              href={`/campaigns/${campaign.id}/invest`}
+              className="inline-block bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 font-medium text-sm px-5 py-2.5 rounded-lg transition-colors"
+            >
+              Invest directly
+            </Link>
+          </div>
         </div>
       )}
 

@@ -47,7 +47,7 @@ export async function createDepositSession(
         price_data: {
           currency: 'usd',
           unit_amount: amountCents,
-          product_data: { name: 'Wallet Deposit — AmanahOS' },
+          product_data: { name: 'Wallet Deposit — PotLaunch' },
         },
         quantity: 1,
       },
@@ -137,4 +137,68 @@ export async function refundPaymentIntent(paymentIntentId: string): Promise<stri
     payment_intent: paymentIntentId,
   })
   return refund.id
+}
+
+// ─── Revenue Oracle OAuth (founder's own business Stripe account) ─────────────
+// This is SEPARATE from the Express payout account (stripe_account_id).
+// We request read_only scope to receive their revenue webhooks.
+
+export function createRevenueOAuthUrl(state: string): string {
+  const params = new URLSearchParams({
+    response_type: 'code',
+    client_id: process.env.STRIPE_CLIENT_ID!,
+    scope: 'read_only',
+    state,
+    redirect_uri: `${APP_URL}/api/stripe/revenue-oauth/callback`,
+  })
+  return `https://connect.stripe.com/oauth/authorize?${params}`
+}
+
+export async function exchangeRevenueOAuthCode(code: string): Promise<string> {
+  // @ts-expect-error — stripe.oauth exists but types may lag SDK version
+  const response = await stripe.oauth.token({ grant_type: 'authorization_code', code })
+  return response.stripe_user_id as string
+}
+
+export async function listChargesForAccount(
+  stripeAccountId: string,
+  createdGte: number,
+  createdLte: number
+) {
+  return stripe.charges.list(
+    { created: { gte: createdGte, lte: createdLte }, limit: 100 },
+    { stripeAccount: stripeAccountId }
+  )
+}
+
+// ─── Investment PaymentIntent (pitch-accepted flow) ───────────────────────────
+
+export async function createInvestmentIntent(
+  investorId: string,
+  campaignId: string,
+  investmentId: string,
+  pitchId: string,
+  amountCents: number
+): Promise<{ id: string; clientSecret: string }> {
+  const db = createAdminClient()
+  const { data: investor } = await db.from('users').select('stripe_customer_id').eq('id', investorId).single()
+
+  const customerId = investor?.stripe_customer_id ?? (await getOrCreateCustomer(investorId, ''))
+
+  const pi = await stripe.paymentIntents.create({
+    amount: amountCents,
+    currency: 'usd',
+    customer: customerId,
+    payment_method_types: ['card'],
+    transfer_group: `campaign_${campaignId}`,
+    metadata: {
+      type:          'growth_investment',
+      campaign_id:   campaignId,
+      investor_id:   investorId,
+      investment_id: investmentId,
+      pitch_id:      pitchId,
+    },
+  })
+
+  return { id: pi.id, clientSecret: pi.client_secret! }
 }
