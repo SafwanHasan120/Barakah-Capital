@@ -34,6 +34,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <div className="pt-6 pb-2 px-3">
             <p className="text-xs font-semibold text-brand/50 uppercase tracking-widest">My Activity</p>
           </div>
+          <NavLink href="/founder/campaigns" label="My Campaigns" />
           <NavLink href="/investor/pitches" label="My Pitches" />
           <NavLink href="/investor/contracts" label="My Contracts" />
           <NavLink href="/founder/revenue" label="Revenue Oracle" />
