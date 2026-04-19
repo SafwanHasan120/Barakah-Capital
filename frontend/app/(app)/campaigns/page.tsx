@@ -202,26 +202,15 @@ export default function CampaignsPage() {
   const [businessType, setBusinessType] = useState('')
   const [loading, setLoading] = useState(true)
 
-  const fetchCampaigns = useCallback(async (p: number, s: string, sec: string, bt: string) => {
+  const fetchCampaigns = useCallback(async (_p: number, s: string, sec: string, bt: string) => {
     setLoading(true)
     try {
-      const params = new URLSearchParams({ status: s, page: String(p) })
-      if (sec) params.set('sector', sec)
-      if (bt) params.set('business_type', bt)
-      const res = await fetch(`/api/campaigns?${params}`)
-      const data = await res.json()
-      const apiCampaigns: Campaign[] = data.campaigns ?? []
-
-      // Filter mock campaigns by active filters, excluding any whose id matches a real campaign
-      const apiIds = new Set(apiCampaigns.map((c) => c.id))
-      let filtered = MOCK_CAMPAIGNS.filter((c) => !apiIds.has(c.id))
+      let filtered = [...MOCK_CAMPAIGNS]
       if (s && s !== 'all') filtered = filtered.filter((c) => c.status === s)
       if (sec) filtered = filtered.filter((c) => c.sector === sec)
       if (bt) filtered = filtered.filter((c) => c.business_type === bt)
-
-      const merged = [...apiCampaigns, ...filtered]
-      setCampaigns(merged)
-      setTotal((data.total ?? 0) + filtered.length)
+      setCampaigns(filtered)
+      setTotal(filtered.length)
     } finally {
       setLoading(false)
     }
